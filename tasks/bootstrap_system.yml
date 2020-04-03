@@ -1,0 +1,67 @@
+---
+# Загружаем переменные
+- name: NOMAD | Include OS variables
+  include_vars: "{{ ansible_os_family }}.yml"
+  tags: os_packages
+
+# Устанавливаем пакеты
+- name: NOMAD | OS packages
+  package:
+    name: "{{ nomad_os_packages }}"
+    state: present
+  tags: os_packages
+
+# Получаем информацию о сервисах на удаленной машине
+- name: NOMAD | Get service facts
+  service_facts: {}
+
+# Создаем группу
+# Если:
+## Группа не root
+- name: NOMAD | Create user group
+  group:
+    name: "{{ nomad_group }}"
+  when:
+    - nomad_group != "root"
+    - nomad_manage_group|default(false)
+  tags: os_group
+
+# Создаем пользователя
+# Если:
+## Пользователь не root
+- name: NOMAD | Create user
+  user:
+    name: "{{ nomad_user }}"
+    groups: "{{ nomad_group }}"
+    generate_ssh_key: "{{ nomad_ssh_key }}"
+    shell: "{{ nomad_shell }}"
+    system: "{{ nomad_system }}"
+    create_home: false
+  when:
+    - nomad_user != "root"
+    - nomad_manage_user|default(false)
+  tags: os_user
+
+- name: NOMAD | Enable iptables filtering on bridge interfaces
+  sysctl:
+    name: "{{ item }}"
+    state: present
+    sysctl_file: "/etc/sysctl.d/br_netfilter.conf"
+    value: '1'
+    reload: true
+  with_items:
+    - net.bridge.bridge-nf-call-iptables
+    - net.bridge.bridge-nf-call-arptables
+    - net.bridge.bridge-nf-call-ip6tables
+  tags: os_params
+
+- name: NOMAD | Ensure port range is reserved
+  sysctl:
+    name: net.ipv4.ip_local_reserved_ports
+    value: "{{ nomad_reserved_ports }}"
+    sysctl_set: true
+    sysctl_file: "/etc/sysctl.d/node-port.conf"
+    state: present
+    reload: true
+  when: nomad_reserved_ports is defined
+  tags: os_params

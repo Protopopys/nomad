@@ -1,0 +1,15 @@
+---
+- name: NOMAD | Import bootstrap os task
+  import_tasks: "bootstrap_system.yml"
+  tags:
+    - bootstrap
+
+- name: NOMAD | Import Nomad installation task
+  import_tasks: "install.yml"
+  tags:
+    - install
+
+- name: NOMAD | Import Nomad configuration task
+  import_tasks: "configure.yml"
+  tags:
+    - configure

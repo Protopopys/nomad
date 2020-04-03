@@ -1,0 +1,23 @@
+galaxy_info:
+  author: Kirill Protopopov
+  description: Role of installing the Nomad cluster
+  company: IBS
+
+  license: GPL-3.0-only
+
+  min_ansible_version: 2.9
+
+  platforms:
+  - name: Centos
+    versions:
+     - 7
+     - 8
+  - name: AltLinux
+    versions:
+     - 7
+     - 7.1
+
+  galaxy_tags:
+    - nomad
+
+dependencies: []

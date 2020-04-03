@@ -1,0 +1,8 @@
+---
+# To Do
+nomad_os_packages:
+  - cgroup-bin
+  - curl
+  - git
+  - libcgroup1
+  - unzip

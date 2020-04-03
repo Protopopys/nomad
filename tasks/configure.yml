@@ -1,0 +1,94 @@
+---
+# Создаем папки на удаленной машине
+- name: NOMAD | Creating conf folder
+  file:
+    path: "{{ nomad_conf_dir }}"
+    state: directory
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+    mode: "0755"
+  tags:
+    - config_file
+    - configs
+
+- name: NOMAD | Creating data folder
+  file:
+    path: "{{ nomad_data_dir }}"
+    state: directory
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+    mode: "0700"
+
+# Создаем конфигурационный файл сервиса
+- name: NOMAD | Creating base configuration file
+  template:
+    src: "nomad.hcl.j2"
+    dest: "{{ nomad_conf_dir }}/nomad.hcl"
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+    mode: "0644"
+  notify: NOMAD | Restart service
+  tags:
+    - config_file
+    - configs
+
+# Создаем конфигурационный файл сервиса
+- name: NOMAD | Creating server configuration file
+  template:
+    src: "server.hcl.j2"
+    dest: "{{ nomad_conf_dir }}/server.hcl"
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+    mode: "0644"
+  notify: NOMAD | Restart service
+  when: _nomad_node_server | bool
+  tags:
+    - config_file
+    - configs
+
+# Создаем конфигурационный файл сервиса
+- name: NOMAD | Creating client configuration file
+  template:
+    src: "client.hcl.j2"
+    dest: "{{ nomad_conf_dir }}/client.hcl"
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+    mode: "0644"
+  notify: NOMAD | Restart service
+  when: _nomad_node_client | bool
+  tags:
+    - config_file
+    - configs
+
+# Создаем конфигурационный файл systemd
+- name: NOMAD | Creating systemd config file
+  template:
+    src: "systemd.service.j2"
+    dest: "/etc/systemd/system/nomad.service"
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - NOMAD | Reload systemd
+    - NOMAD | Restart service
+  tags:
+    - systemd_config_file
+    - configs
+
+# Запускаем принудительное исполнение handlers    
+- name: NOMAD | Flush handlers
+  meta: flush_handlers
+
+# Убеждаемся что сервис запущен и добавлен в автозапуск
+- name: NOMAD | Ensure nomad is started and enabled a boot
+  service:
+    name: nomad
+    state: "{{ nomad_state }}"
+    enabled: "{{ nomad_enabled }}"
+
+# Создаем symlink для бинарного файлы nomad
+- name: NOMAD | Create symlink for nomad executable
+  file:
+    src: "{{ nomad_bin_dir }}/nomad"
+    dest: /usr/bin/nomad
+    state: link

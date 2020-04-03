@@ -1,0 +1,7 @@
+---
+# To Do
+nomad_os_packages:
+  - curl
+  - git
+  - libselinux-python
+  - unzip

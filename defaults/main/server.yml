@@ -1,0 +1,15 @@
+---
+#### Server settings
+nomad_retry_max: 0
+nomad_retry_join: false
+nomad_retry_interval: "30s"
+nomad_rejoin_after_leave: false
+nomad_enabled_schedulers:
+  - service
+  - batch
+  - system
+nomad_num_schedulers: "{{ ansible_processor_vcpus }}"
+nomad_node_gc_threshold: "24h"
+nomad_job_gc_threshold: "4h"
+nomad_eval_gc_threshold: "1h"
+nomad_encrypt: ""

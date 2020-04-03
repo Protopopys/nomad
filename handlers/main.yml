@@ -1,0 +1,18 @@
+---
+# Перечитываем конфигурацию systemd
+- name: NOMAD | Reload systemd
+  systemd:
+    daemon_reload: true
+
+# Перезагружаем сервис
+- name: NOMAD | Restart service
+  service:
+    name: nomad
+    state: restarted
+
+# Останавливаем сервис
+- name: NOMAD | Ensure service is stopped
+  service:
+    name: nomad
+    state: stopped
+  when: "'nomad.service' in services"

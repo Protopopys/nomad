@@ -1,0 +1,60 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+lint: |
+  set -e
+  yamllint .
+  ansible-lint
+verifier:
+  name: testinfra
+platforms:
+  - name: instance1
+    groups:
+      - nomad_instances
+    image: ${MOLECULE_DISTRO:-centos/systemd }
+    privileged: true
+    command: /sbin/init
+    security_opts:
+      - seccomp=unconfigured
+    capabilities:
+      - SYS_ADMIN
+    volume_mounts:
+      - "/sys/fs/cgroup:/sys/fs/cgroup:ro"
+  - name: instance2
+    groups:
+      - nomad_instances
+    image: ${MOLECULE_DISTRO:-centos/systemd }
+    privileged: true
+    command: /sbin/init
+    security_opts:
+      - seccomp=unconfigured
+    capabilities:
+      - SYS_ADMIN
+    volume_mounts:
+      - "/sys/fs/cgroup:/sys/fs/cgroup:ro"
+  - name: instance3
+    groups:
+      - nomad_instances
+    image: ${MOLECULE_DISTRO:-centos/systemd }
+    privileged: true
+    command: /sbin/init
+    security_opts:
+      - seccomp=unconfigured
+    capabilities:
+      - SYS_ADMIN
+    volume_mounts:
+      - "/sys/fs/cgroup:/sys/fs/cgroup:ro"
+provisioner:
+  name: ansible
+  inventory:
+    host_vars:
+      instance1:
+        nomad_node_role: both
+      instance2:
+        nomad_node_role: both
+      instance3:
+        nomad_node_role: both     
+  playbooks:
+    converge: ${MOLECULE_PLAYBOOK:-converge.yml}
