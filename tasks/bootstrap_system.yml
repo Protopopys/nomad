@@ -14,11 +14,13 @@
 # Получаем информацию о сервисах на удаленной машине
 - name: NOMAD | Get service facts
   service_facts: {}
+  tags: facts
 
 # Получаем информацию об удаленной машине
 - name: NOMAD | Getting facts
   setup:
     filter: ansible_*
+  tags: facts
 
 # Создаем группу
 # Если:
@@ -51,11 +53,13 @@
   modprobe:
     name: br_netfilter
     state: present
+  tags: os_params
 
 - name: NOMAD | Persist br_netfilter module
   copy:
     dest: /etc/modules-load.d/br_netfilter.conf
     content: br_netfilter
+  tags: os_params
 
 - name: NOMAD | Enable iptables filtering on bridge interfaces
   sysctl:

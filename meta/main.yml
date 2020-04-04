@@ -1,7 +1,6 @@
 galaxy_info:
   author: Kirill Protopopov
   description: Role of installing the Nomad cluster
-  company: IBS
 
   license: GPL-3.0-only
 
@@ -19,5 +18,3 @@ galaxy_info:
 
   galaxy_tags:
     - nomad
-
-dependencies: []
