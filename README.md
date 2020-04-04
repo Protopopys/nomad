@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/Protopopys/ansible-nomad.svg?branch=master)(https://travis-ci.org/Protopopys/ansible-nomad)
+[![Build Status](https://travis-ci.org/Protopopys/ansible-nomad.svg?branch=master)](https://travis-ci.org/Protopopys/ansible-nomad)
 
 # Ansible Role:ansible-nomad
 
