@@ -11,7 +11,7 @@ services:
   - docker
 install:
   # Install ansible
-  - pip install ansible
+  - pip install ansible ansible-lint
 
   # Check ansible version
   - ansible --version
