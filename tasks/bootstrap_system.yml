@@ -15,6 +15,11 @@
 - name: NOMAD | Get service facts
   service_facts: {}
 
+# Получаем информацию об удаленной машине
+- name: NOMAD | Getting facts
+  setup:
+    filter: ansible_*
+
 # Создаем группу
 # Если:
 ## Группа не root

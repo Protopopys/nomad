@@ -52,9 +52,12 @@ provisioner:
     host_vars:
       instance1:
         nomad_node_role: both
+        nomad_advertise_address: "{{ advertise_ip | default(ansible_host) }}"
       instance2:
         nomad_node_role: both
+        nomad_advertise_address: "{{ advertise_ip | default(ansible_host) }}"
       instance3:
-        nomad_node_role: both     
+        nomad_node_role: both
+        nomad_advertise_address: "{{ advertise_ip | default(ansible_host) }}"
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-converge.yml}
