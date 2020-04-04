@@ -2,4 +2,5 @@ ansible
 ansible-lint
 molecule
 docker
+netaddr
 testinfra
