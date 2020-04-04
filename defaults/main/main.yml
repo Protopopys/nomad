@@ -61,8 +61,8 @@ nomad_leave_on_interrupt: false
 nomad_disable_update_check: false
 
 ### Addresses
-nomad_bind_address: "0.0.0.0"
-nomad_advertise_address: "0.0.0.0"
+nomad_bind_address: "{{ advertise_ip | default(ansible_host) }}"
+nomad_advertise_address: "{{ advertise_ip | default(ansible_host) }}"
 
 ### Servers
 nomad_group_name: "nomad_instances"
@@ -97,7 +97,7 @@ nomad_consul_server_auto_join: true
 nomad_consul_client_auto_join: true
 
 ### ACLs
-nomad_acl_enabled: true
+nomad_acl_enabled: false
 nomad_acl_token_ttl: "30s"
 nomad_acl_policy_ttl: "30s"
 nomad_acl_replication_token: ""
