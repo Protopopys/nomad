@@ -11,8 +11,11 @@ verifier:
   name: testinfra
 platforms:
   - name: instance1
+    hostname: instance1
     groups:
       - nomad_instances
+    networks:
+      - name: nomad
     image: ${MOLECULE_DISTRO:-centos/systemd }
     privileged: true
     command: /sbin/init
@@ -23,8 +26,11 @@ platforms:
     volume_mounts:
       - "/sys/fs/cgroup:/sys/fs/cgroup:ro"
   - name: instance2
+    hostname: instance2
     groups:
       - nomad_instances
+    networks:
+      - name: nomad
     image: ${MOLECULE_DISTRO:-centos/systemd }
     privileged: true
     command: /sbin/init
@@ -35,8 +41,11 @@ platforms:
     volume_mounts:
       - "/sys/fs/cgroup:/sys/fs/cgroup:ro"
   - name: instance3
+    hostname: instance3
     groups:
       - nomad_instances
+    networks:
+      - name: nomad
     image: ${MOLECULE_DISTRO:-centos/systemd }
     privileged: true
     command: /sbin/init
@@ -52,12 +61,12 @@ provisioner:
     host_vars:
       instance1:
         nomad_node_role: both
-        nomad_advertise_address: "{{ advertise_ip | default(ansible_host) }}"
+        ansible_host: instance1
       instance2:
         nomad_node_role: both
-        nomad_advertise_address: "{{ advertise_ip | default(ansible_host) }}"
+        ansible_host: instance2
       instance3:
         nomad_node_role: both
-        nomad_advertise_address: "{{ advertise_ip | default(ansible_host) }}"
+        ansible_host: instance3
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-converge.yml}
