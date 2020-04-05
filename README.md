@@ -1,4 +1,4 @@
-[![Build](https://travis-ci.org/Protopopys/ansible-nomad/workflows/Build/badge.svg)](https://travis-ci.org/Protopopys/ansible-nomad/actions?query=workflow%3ABuild+branch%3Amaster) 
+![Molecule Test](https://github.com/Protopopys/ansible-nomad/workflows/Molecule%20Test/badge.svg)
 
 # Ansible Role:ansible-nomad
 
