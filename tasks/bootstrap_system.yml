@@ -20,6 +20,16 @@
   package:
     name: "{{ nomad_os_packages }}"
     state: present
+  when: "ansible_os_family != 'Altlinux'"
+  tags: os_packages
+
+# Устанавливаем пакеты
+- name: NOMAD | OS packages
+  apt_rpm:
+    name: "{{ item }}"
+    state: present
+  when: "ansible_os_family == 'Altlinux'"
+  loop: "{{ nomad_os_packages }}"
   tags: os_packages
 
 # Создаем группу
