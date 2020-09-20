@@ -7,66 +7,72 @@ lint: |
   set -e
   yamllint .
   ansible-lint
+
 verifier:
   name: testinfra
+
 platforms:
-  - name: instance1
-    hostname: instance1
+  - name: instance1.nomad
     groups:
-      - nomad_instances
+      - nomad
     networks:
       - name: nomad
-    image: ${MOLECULE_DISTRO:-centos/systemd }
-    privileged: true
-    command: /sbin/init
+    image: protopopys/systemd-centos:7
+    override_command: False
+    tty: True
+    privileged: True
     security_opts:
       - seccomp=unconfigured
-    capabilities:
-      - SYS_ADMIN
-    volume_mounts:
+    volumes:
       - "/sys/fs/cgroup:/sys/fs/cgroup:ro"
-  - name: instance2
-    hostname: instance2
+    tmpfs:
+      - /tmp
+      - /run/lock
+
+  - name: instance2.nomad
     groups:
-      - nomad_instances
+      - nomad
     networks:
       - name: nomad
-    image: ${MOLECULE_DISTRO:-centos/systemd }
-    privileged: true
-    command: /sbin/init
+    image: protopopys/systemd-centos:7
+    override_command: False
+    tty: True
+    privileged: True
     security_opts:
       - seccomp=unconfigured
-    capabilities:
-      - SYS_ADMIN
-    volume_mounts:
+    volumes:
       - "/sys/fs/cgroup:/sys/fs/cgroup:ro"
-  - name: instance3
+    tmpfs:
+      - /tmp
+      - /run/lock
+
+  - name: instance3.nomad
     hostname: instance3
     groups:
-      - nomad_instances
+      - nomad
     networks:
       - name: nomad
-    image: ${MOLECULE_DISTRO:-centos/systemd }
-    privileged: true
-    command: /sbin/init
+    image: protopopys/systemd-centos:7
+    override_command: False
+    tty: True
+    privileged: True
     security_opts:
       - seccomp=unconfigured
-    capabilities:
-      - SYS_ADMIN
-    volume_mounts:
+    volumes:
       - "/sys/fs/cgroup:/sys/fs/cgroup:ro"
+    tmpfs:
+      - /tmp
+      - /run/lock
+
 provisioner:
   name: ansible
   inventory:
     host_vars:
-      instance1:
+      instance1.nomad:
         nomad_node_role: both
-        ansible_host: instance1
-      instance2:
+      instance2.nomad:
         nomad_node_role: both
-        ansible_host: instance2
-      instance3:
+      instance3.nomad:
         nomad_node_role: both
-        ansible_host: instance3
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-converge.yml}

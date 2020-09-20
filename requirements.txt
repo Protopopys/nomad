@@ -1,6 +1,6 @@
-ansible
-ansible-lint
-molecule
+ansible==2.9.11
+ansible-lint==4.2.0
+molecule==3.0.6
 docker
 netaddr
 testinfra

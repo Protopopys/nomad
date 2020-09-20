@@ -1,28 +1,130 @@
 ---
 #### Client settings
-nomad_node_class: ""
-nomad_no_host_uuid: false
-nomad_max_kill_timeout: "30s"
-# nomad_network_interface:
+
+# Specifies the directory to use for allocation data. By default, this is the top-level data_dir suffixed with "alloc", like "/opt/nomad/alloc". 
+# This must be an absolute path.
+nomad_client_alloc_dir: "{{ nomad_data_dir }}/alloc"
+
+# Specifies a key-value mapping that defines the chroot environment for jobs using the Exec and Java drivers.
+nomad_chroot_env: {}
+
+# Specifies if client mode is enabled.
+# All other client configuration options depend on this value.
+nomad_client_enabled: "{{ (nomad_node_role == 'client') or (nomad_node_role == 'both') }}"
+
+# Specifies the maximum amount of time a job is allowed to wait to exit.
+# Individual jobs may customize their own kill timeout, but it may not exceed this value.
+nomad_max_kill_timeout: "30s" 
+
+# Specifies if the client should disable remote task execution to tasks running on this client.
+nomad_disable_remote_exec: false
+
+# Specifies a key-value map that annotates with user-defined metadata.
+nomad_meta: {}
+
+# Specifies the name of the interface to force network fingerprinting on. When run in dev mode, this defaults to the loopback interface. When not in dev mode, the interface attached to the default route is used.
+# The scheduler chooses from these fingerprinted IP addresses when allocating ports for tasks.
+# If no non-local IP addresses are found, Nomad could fingerprint link-local IPv6 addresses depending on the client's "fingerprint.network.disallow_link_local" configuration value.
+nomad_network_interface: "" 
+
+# Specifies an override for the network link speed. 
+# This value, if set, overrides any detected or defaulted link speed.
+# Most clients can determine their speed automatically, and thus in most cases this should be left unset.
 nomad_network_speed: 0
+
+# Specifies an override for the total CPU compute.
+# This value should be set to # Cores * Core MHz.
+# For example, a quad-core running at 2 GHz would have a total compute of 8000 (4 * 2000).
+# Most clients can determine their total CPU compute automatically, and thus in most cases this should be left unset.
 nomad_cpu_total_compute: 0
-nomad_gc_interval: "1m"
+
+# Specifies an override for the total memory.
+# If set, this value overrides any detected memory.
+nomad_memory_total_mb: 0 
+
+# Specifies an arbitrary string used to logically group client nodes by user-defined class.
+# This can be used during job placement as a filter.
+nomad_node_class: ""
+
+# Specifies a key-value mapping of internal configuration for clients, such as for driver configuration.
+nomad_options: {}
+
+# Specifies that Nomad should reserve a portion of the node's resources from receiving tasks.
+# This can be used to target a certain capacity usage for the node.
+# For example, 20% of the node's CPU could be reserved to target a CPU utilization of 80%.
+nomad_reserved_cpu: 0
+nomad_reserved_memory: 0
+nomad_reserved_disk: 0
+nomad_reserved_ports: "20000-32000"
+
+# Specifies the directory to use to store client state.
+# By default, this is - the top-level data_dir suffixed with "client", like "/opt/nomad/client".
+# This must be an absolute path.
+nomad_client_state_dir: "{{ nomad_data_dir }}/client"
+
+# Specifies the interval at which Nomad attempts to garbage collect terminal allocation directories.
+nomad_gc_interval: "1m"  
+
+# Specifies the disk usage percent which Nomad tries to maintain by garbage collecting terminal allocations.
 nomad_gc_disk_usage_threshold: 80
+
+# Specifies the inode usage percent which Nomad tries to maintain by garbage collecting terminal allocations.
 nomad_gc_inode_usage_threshold: 70
+
+# Specifies the maximum number of allocations which a client will track before triggering a garbage collection of terminal allocations.
+# This will not limit the number of allocations a node can run at a time, however after gc_max_allocs every new allocation will cause terminal allocations to be GC'd.
+nomad_gc_max_allocs: 50
+
+# Specifies the maximum number of parallel destroys allowed by the garbage collector.
+# This value should be relatively low to avoid high resource usage during garbage collections.
 nomad_gc_parallel_destroys: 2
 
+# By default a random node UUID will be generated, but setting this to false will use the system's UUID.
+# Before Nomad 0.6 the default was to use the system UUID.
+nomad_no_host_uuid: true
 
-nomad_reserved_cpu: "0"
-nomad_reserved_memory: "0"
-nomad_reserved_disk: "0"
-nomad_reserved_ports: "20000-32000"
-nomad_reserved:
-  cpu: "{{ nomad_reserved_cpu | default('0', true) }}"
-  memory: "{{ nomad_reserved_memory | default('0', true) }}"
-  disk: "{{ nomad_reserved_disk | default('0', true) }}"
-  ports: "{{ nomad_reserved_ports | default('22', true) }}"
-nomad_host_volumes: []
-nomad_options: {}
-nomad_meta: {}
-nomad_bootstrap_expect: "{{ nomad_servers | count or 3 }}"
-nomad_chroot_env: false
+# Sets the search path that is used for CNI plugin discovery.
+# Multiple paths can be searched using colon delimited paths
+nomad_cni_path: "/opt/cni/bin"
+
+# Sets the directory where CNI network configuration is located.
+# The client will use this path when fingerprinting CNI networks.
+nomad_cni_config_dir: "/opt/cni/config"
+
+# Sets the name of the bridge to be created by nomad for allocations running with bridge networking mode on the client.
+nomad_bridge_network_name: "nomad"
+
+# Specifies the subnet which the client will use to allocate IP addresses from.
+nomad_bridge_network_subnet: "172.26.66.0/23"
+
+# Specifies controls on the behavior of task template stanzas.
+# Specifies a list of template rendering functions that should be disallowed in job specs.
+# By default the plugin function is disallowed as it allows running arbitrary commands on the host as root (unless Nomad is configured to run as a non-root user).
+nomad_template_function_blacklist: 
+  - "plugin"
+
+  # Allows templates access to arbitrary files on the client host via the file function.
+# By default templates can access files only within the task directory.
+nomad_template_disable_file_sandbox: false
+
+# Exposes paths from the host as volumes that can be mounted into jobs.
+nomad_host_volumes: {}
+  # - volume1:
+  #     name: "foo"
+  #     path: "/foo/bar"
+  #     read_only: true
+  # - volume2:
+  #     name: "bar"
+  #     path: "/ber/foo"
+  #     read_only: false
+
+#  Registers additional host networks with the node that can be selected when port mapping.
+nomad_host_networks: {}
+  # - network1:
+  #     name: "foo"
+  #     cidr: "203.0.113.0/24"
+  #     reserved_ports: "22,80"
+  # - network1:
+  #     name: "bar"
+  #     cidr: "203.0.115.0/24"
+  #     reserved_ports: "22"

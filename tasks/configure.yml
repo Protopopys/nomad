@@ -1,6 +1,6 @@
 ---
 # Создаем папки на удаленной машине
-- name: NOMAD | Creating conf folder
+- name: NOMAD | Creating conf directory
   file:
     path: "{{ nomad_conf_dir }}"
     state: directory
@@ -8,16 +8,47 @@
     group: "{{ nomad_group }}"
     mode: "0755"
   tags:
+    - directory
     - config_file
     - configs
 
-- name: NOMAD | Creating data folder
+- name: NOMAD | Creating data/plugin directory
   file:
-    path: "{{ nomad_data_dir }}"
+    path: "{{ item }}"
     state: directory
     owner: "{{ nomad_user }}"
     group: "{{ nomad_group }}"
     mode: "0700"
+  loop:
+    - "{{ nomad_data_dir }}"
+    - "{{ nomad_plugin_dir }}"
+  tags:
+    - directory
+
+- name: NOMAD | Creating server data directory
+  file:
+    path: "{{ nomad_server_data_dir }}"
+    state: directory
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+    mode: "0700"
+  when: nomad_server_enabled | bool
+  tags:
+    - directory
+
+- name: NOMAD | Creating client directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+    mode: "0700"
+  loop:
+    - "{{ nomad_client_alloc_dir }}"
+    - "{{ nomad_client_state_dir }}"
+  when: nomad_client_enabled | bool
+  tags:
+    - directory
 
 # Создаем конфигурационный файл сервиса
 - name: NOMAD | Creating base configuration file
@@ -27,7 +58,7 @@
     owner: "{{ nomad_user }}"
     group: "{{ nomad_group }}"
     mode: "0644"
-  notify: NOMAD | Restart service
+  register: nomad_main_config_file
   tags:
     - config_file
     - configs
@@ -40,8 +71,8 @@
     owner: "{{ nomad_user }}"
     group: "{{ nomad_group }}"
     mode: "0644"
-  notify: NOMAD | Restart service
-  when: _nomad_node_server | bool
+  register: nomad_server_config_file
+  when: nomad_server_enabled | bool
   tags:
     - config_file
     - configs
@@ -54,8 +85,8 @@
     owner: "{{ nomad_user }}"
     group: "{{ nomad_group }}"
     mode: "0644"
-  notify: NOMAD | Restart service
-  when: _nomad_node_client | bool
+  register: nomad_client_config_file
+  when: nomad_client_enabled | bool
   tags:
     - config_file
     - configs
@@ -68,23 +99,31 @@
     owner: root
     group: root
     mode: "0644"
-  notify:
-    - NOMAD | Reload systemd
-    - NOMAD | Restart service
+  register: nomad_systemd_file
   tags:
     - systemd_config_file
     - configs
 
-# Запускаем принудительное исполнение handlers    
-- name: NOMAD | Flush handlers
-  meta: flush_handlers
+# Перезагружаем сервис
+- name: NOMAD | Restart nomad
+  systemd:
+    name: nomad
+    state: restarted
+    daemon_reload: true
+  when:
+    - "'nomad.service' in services"
+    - nomad_main_config_file.changed or
+      nomad_server_config_file.changed or
+      nomad_client_config_file.changed or
+      nomad_systemd_file.changed
 
 # Убеждаемся что сервис запущен и добавлен в автозапуск
 - name: NOMAD | Ensure nomad is started and enabled a boot
-  service:
+  systemd:
     name: nomad
     state: "{{ nomad_state }}"
     enabled: "{{ nomad_enabled }}"
+    daemon_reload: true
 
 # Создаем symlink для бинарного файлы nomad
 - name: NOMAD | Create symlink for nomad executable
@@ -92,3 +131,4 @@
     src: "{{ nomad_bin_dir }}/nomad"
     dest: /usr/bin/nomad
     state: link
+  when: "nomad_bin_dir != '/usr/bin'"

@@ -1,44 +1,48 @@
 server {
-    enabled = {{ _nomad_node_server | bool | lower }}
+    enabled = {{ nomad_server_enabled | bool | lower }}
+    bootstrap_expect = {{ nomad_bootstrap_expect }}
+    data_dir = "{{ nomad_server_data_dir }}"
 
-    {% if _nomad_node_server | bool -%}
-        bootstrap_expect = {{ nomad_bootstrap_expect }}
-    {%- endif %}
-
-    {% if nomad_authoritative_region is defined %}
-authoritative_region = "{{ nomad_authoritative_region }}"
-    {% endif %}
-
-{% if not nomad_use_consul %}
-    {% if nomad_retry_join | bool -%}
-        retry_join = [
-            {%- set comma = joiner(",") -%}
-            {% for server in nomad_servers -%}
-                {{ comma() }}"{{ hostvars[server].nomad_advertise_address | default(hostvars[server].advertise_ip) |default(hostvars[server].ansible_host) | ipwrap }}"
-            {%- endfor -%} ]
-        retry_max = {{ nomad_retry_max }}
-        retry_interval = "{{ nomad_retry_interval }}"
-    {% else -%}
-        start_join = [
-            {%- set comma = joiner(",") -%}
-            {% for server in nomad_servers -%}
-                {{ comma() }}"{{ hostvars[server].nomad_advertise_address | default(hostvars[server].advertise_ip) | default(hostvars[server].ansible_host) | ipwrap }}"
-            {%- endfor -%} ]
-    {%- endif %}
+{% if nomad_authoritative_region is defined and nomad_authoritative_region | length > 0 %}
+    authoritative_region = "{{ nomad_authoritative_region }}"
 {% endif %}
 
-    rejoin_after_leave = {{ nomad_rejoin_after_leave | bool | lower }}
 
-    enabled_schedulers = [
-            {%- set comma = joiner(",") -%}
-            {% for scheduler in nomad_enabled_schedulers -%}
-                {{ comma() }}"{{ scheduler }}"
-            {%- endfor -%} ]
-    num_schedulers = {{ nomad_num_schedulers }}
+{% if not nomad_consul_enabled %}
+    server_join {
+    {% if nomad_retry_join | bool %}
+        retry_join = [ {{ nomad_servers | map("to_json") | join(', ') }} ]
+        retry_interval = "{{ nomad_retry_interval }}"
+        retry_max = {{ nomad_retry_max }}
+    {% else %}
+        start_join = [ {{ nomad_servers | map("to_json") | join(', ') }} ]
+    }
+    {% endif %}
+{% endif %}
+
+    enabled_schedulers = [ {{ nomad_enabled_schedulers | map("to_json") | join(', ') }} ]
+    encrypt = "{{ nomad_encrypt }}"
+
 
     node_gc_threshold = "{{ nomad_node_gc_threshold }}"
-    eval_gc_threshold = "{{ nomad_eval_gc_threshold }}"
+    job_gc_interval = "{{ nomad_job_gc_interval }}"
     job_gc_threshold = "{{ nomad_job_gc_threshold }}"
+    eval_gc_threshold = "{{ nomad_eval_gc_threshold }}"
 
-    encrypt = "{{ nomad_encrypt }}"
+    deployment_gc_threshold = "{{ nomad_deployment_gc_threshold }}"
+    csi_volume_claim_gc_threshold = "{{ nomad_csi_volume_claim_gc_threshold }}"
+    csi_plugin_gc_threshold = "{{ nomad_csi_plugin_gc_threshold }}"
+    heartbeat_grace = "{{ nomad_heartbeat_grace }}"
+    min_heartbeat_ttl = "{{ nomad_min_heartbeat_ttl }}"
+    max_heartbeats_per_second = {{ nomad_max_heartbeats_per_second | float }}
+    num_schedulers = {{ nomad_num_schedulers }}
+
+    protocol_version = {{ nomad_protocol_version }}
+    raft_protocol = {{ nomad_raft_protocol }}
+    raft_multiplier = {{ nomad_raft_multiplier }}
+    rejoin_after_leave = {{ nomad_rejoin_after_leave | bool | lower }}
+
+{% if nomad_upgrade_version is defined and nomad_upgrade_version | length > 0 %}
+    upgrade_version =  "{{ nomad_upgrade_version }}"
+{% endif %}
 }

@@ -1,36 +1,47 @@
 ---
-# Создаем папки на удаленной машине
-- name: NOMAD | Creating folders
-  file:
-    path: "{{ distribution_path }}"
-    state: directory
-    owner: root
-    group: root
-    mode: u+rwx
-
-# Создаем папки на удаленной машине
-- name: NOMAD | Creating folders
-  file:
-    path: "{{ nomad_bin_dir }}"
-    state: directory
-    owner: "{{ nomad_user }}"
-    group: "{{ nomad_group }}"
-    mode: u+rwx
-
 # Проверяем наличие бинарного файла на удаленной машине
 - name: NOMAD | Check that the nomad binary exists on the destination host
   stat:
     path: "{{ nomad_bin_dir }}/nomad"
     checksum_algorithm: "{{ nomad[nomad_version].checksum_algorithm }}"
-  register: remote_binary
+  register: nomad_bin
 
-# Проверяем наличие архива на удаленной машине
-- name: NOMAD | Check that the nomad archive exists on the destination host
-  stat:
-    path: "{{ distribution_path }}/{{ nomad[nomad_version].source_url | basename }}"
-    checksum_algorithm: "{{ nomad[nomad_version].checksum_algorithm }}"
-  register: remote_distr
-  when: remote_binary.stat.checksum|default() != nomad[nomad_version].binary_checksum
+# Создаем переменную install_nomad=true
+# Если:
+## Бинарные файлы отсутствуют или
+## Контрольная сумма бинарных файлов не соответствует требуемой
+- name: NOMAD | Set 'install_nomad' to true
+  set_fact:
+    install_nomad: true
+  when: nomad_bin.stat.checksum|default() != nomad[nomad_version].binary_checksum
+
+- name: NOMAD |(when install_nomad == TRUE)
+  block:
+    # Создаем папки на удаленной машине
+    - name: NOMAD | Creating folders
+      file:
+        path: "{{ distribution_path }}"
+        state: directory
+        owner: root
+        group: root
+        mode: u+rwx
+
+    # Создаем папки на удаленной машине
+    - name: NOMAD | Creating folders
+      file:
+        path: "{{ nomad_bin_dir }}"
+        state: directory
+        owner: "{{ nomad_user }}"
+        group: "{{ nomad_group }}"
+        mode: u+rwx
+
+    # Проверяем наличие архива на удаленной машине
+    - name: NOMAD | Check that the nomad archive exists on the destination host
+      stat:
+        path: "{{ distribution_path }}/{{ nomad[nomad_version].source_url | basename }}"
+        checksum_algorithm: "{{ nomad[nomad_version].checksum_algorithm }}"
+      register: nomad_archive
+  when: install_nomad|default(false)
 
 # Блок заданий
 # исполняется если:
@@ -44,7 +55,7 @@
         state: directory
         mode: u+rwx
       run_once: true
-      delegate_to: "localhost"
+      delegate_to: localhost
 
     # Проверяем наличие архива на downloader сервере
     - name: NOMAD | Check that the nomad archive exists on the localhost
@@ -78,11 +89,10 @@
         owner: root
         group: root
         mode: u+rwx
-      notify: NOMAD | Ensure service is stopped
   when:
+    - install_nomad|default(false)
     - use_downloader
-    - remote_binary.stat.checksum|default() != nomad[nomad_version].binary_checksum
-    - remote_distr.stat.checksum|default() != nomad[nomad_version].checksum
+    - nomad_archive.stat.checksum|default() != nomad[nomad_version].checksum
 
 # Выкачиваем архив напрямую из сети интернет
 # Если:
@@ -94,34 +104,19 @@
     checksum: "{{ nomad[nomad_version].checksum_algorithm }}:{{ nomad[nomad_version].checksum }}"
     owner: root
     group: root
-  notify: NOMAD | Ensure service is stopped
   when:
+    - install_nomad|default(false)
     - not use_downloader
-    - remote_binary.stat.checksum|default() != nomad[nomad_version].binary_checksum
-    - remote_distr.stat.checksum|default() != nomad[nomad_version].checksum
+    - nomad_archive.stat.checksum|default() != nomad[nomad_version].checksum
 
-# Запускаем принудительное исполнение handlers
-- name: NOMAD | Flush handlers
-  meta: flush_handlers
-
-# Ищем файлы в директории "{{ nomad_bin_dir }}"
-# Если:
-## Контрольная сумма бинарного файла на удаленном хосте не совпадает с указанной в переменной - nomad[nomad_version].binary_checksum)
-- name: NOMAD | Find files in "{{ nomad_bin_dir }}"
-  find:
-    paths: "{{ nomad_bin_dir }}"
-  register: files_to_delete
-  when: remote_binary.stat.checksum|default() != nomad[nomad_version].binary_checksum
-
-# Очищаем директорию "{{ nomad_bin_dir }}"
-# Если:
-## Контрольная сумма бинарного файла на удаленном хосте не совпадает с указанной в переменной - nomad[nomad_version].binary_checksum)
-- name: NOMAD | Cleanup directory
-  file:
-    path: "{{ item.path }}"
-    state: absent
-  loop: "{{ files_to_delete.files }}"
-  when: remote_binary.stat.checksum|default() != nomad[nomad_version].binary_checksum
+# Останавливаем сервис
+- name: NOMAD | Ensure service is stopped
+  systemd:
+    name: nomad
+    state: stopped
+  when:
+    - install_nomad|default(false)
+    - "'nomad.service' in services"
 
 # Распаковываем архив на удаленном сервере в директорию "{{ nomad_bin_dir }}"
 # Если:
@@ -133,4 +128,4 @@
     owner: "{{ nomad_user }}"
     group: "{{ nomad_group }}"
     remote_src: true
-  when: remote_binary.stat.checksum|default() != nomad[nomad_version].binary_checksum
+  when: nomad_bin.stat.checksum|default() != nomad[nomad_version].binary_checksum
