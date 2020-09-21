@@ -127,5 +127,6 @@
     dest: "{{ nomad_bin_dir }}"
     owner: "{{ nomad_user }}"
     group: "{{ nomad_group }}"
+    mode: '1755'
     remote_src: true
   when: nomad_bin.stat.checksum|default() != nomad[nomad_version].binary_checksum
