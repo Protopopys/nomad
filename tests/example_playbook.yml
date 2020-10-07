@@ -1,6 +1,0 @@
----
-- name: Nomad Cluster
-  hosts: nomad
-  gather_facts: false
-  roles:
-    - role: ../../ansible-nomad
