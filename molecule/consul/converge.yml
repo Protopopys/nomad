@@ -1,0 +1,10 @@
+---
+- name: Nomad+Consul
+  hosts: all
+  tasks:
+    - name: "Include ansible-nomad"
+      include_role:
+        name: "nomad"
+      vars:
+        nomad_consul_enabled: true
+        consul_client_addr: "0.0.0.0"
