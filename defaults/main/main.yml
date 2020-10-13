@@ -350,7 +350,7 @@ nomad_consul_server_auto_join: true
 # Specifies the name of the service in Consul for the Nomad clients.
 nomad_consul_client_service_name: "nomad-client"
 # Specifies the name of the service in Consul for the Nomad servers.
-nomad_consul_servers_service_name: "nomad-server"
+nomad_consul_server_service_name: "nomad-server"
 # Specifies if Consul health checks should bind to the advertise address.
 # By default, this is the bind address.
 nomad_consul_checks_use_advertise: false
