@@ -1,7 +1,0 @@
----
-dependencies: # noqa 701
-  - role: consul
-    when:
-      - nomad_consul_enabled
-    tags:
-      - consul

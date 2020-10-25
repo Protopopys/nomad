@@ -1,0 +1,25 @@
+---
+## Logs, debugs ##
+# Specifies if the debugging HTTP endpoints should be enabled. 
+# These endpoints can be used with profiling tools to dump diagnostic information about Nomad's internals.
+nomad_debug: false
+# Specifies the verbosity of logs the Nomad agent will output. 
+# Valid log levels include WARN, INFO, or DEBUG in increasing order of verbosity.
+nomad_log_level: "INFO"
+# Output logs in a JSON format.
+nomad_log_json: false
+# Specifies the path for logging. 
+# If the path does not includes a filename, the filename defaults to "nomad-{timestamp}.log". 
+# This setting can be combined with log_rotate_bytes and log_rotate_duration for a fine-grained log rotation control.
+nomad_log_file: "nomad-{timestamp}.log"
+# Specifies the number of bytes that should be written to a log before it needs to be rotated.
+# Unless specified, there is no limit to the number of bytes that can be written to a log file.
+nomad_log_rotate_bytes: 0
+# Specifies the maximum duration a log should be written to before it needs to be rotated.
+# Must be a duration value such as 30s.
+nomad_log_rotate_duration: "24h"
+# Specifies the maximum number of older log file archives to keep.
+# If 0 no files are ever deleted.
+nomad_log_rotate_max_files: 0
+# Specifies if the agent should log to syslog. This option only works on Unix based systems.
+nomad_enable_syslog: false

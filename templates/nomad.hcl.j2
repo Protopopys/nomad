@@ -10,11 +10,19 @@ ports {
     rpc = {{ nomad_ports_rpc }}
     serf = {{ nomad_ports_serf }}
 }
+{% if nomad_advertise_http_address | ipaddr or nomad_advertise_rpc_address | ipaddr or nomad_advertise_serf_address | ipaddr %}
 advertise {
-    http = "{{ nomad_advertise_address }}:{{ nomad_advertise_ports_http }}"
-    rpc = "{{ nomad_advertise_address }}:{{ nomad_advertise_ports_rpc }}"
-    serf = "{{ nomad_advertise_address }}:{{ nomad_advertise_ports_serf }}"
+{% if nomad_advertise_http_address | ipaddr %}
+    http = "{{ nomad_advertise_http_address }}:{{ nomad_advertise_ports_http }}"
+{% endif %}
+{% if nomad_advertise_rpc_address | ipaddr %}
+    rpc = "{{ nomad_advertise_rpc_address }}:{{ nomad_advertise_ports_rpc }}"
+{% endif %}
+{% if nomad_advertise_serf_address | ipaddr %}
+    serf = "{{ nomad_advertise_serf_address }}:{{ nomad_advertise_ports_serf }}"
+{% endif %}
 }
+{% endif %}
 
 ## Directories ##
 data_dir = "{{ nomad_data_dir }}"

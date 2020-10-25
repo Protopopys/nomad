@@ -4,7 +4,7 @@
 # https://www.nomadproject.io/docs/configuration/server_join
 ## Server Join ##
 nomad_retry_max: 0
-nomad_retry_join: false
+nomad_retry_join: true
 nomad_retry_interval: "30s"
 
 # Specifies the authoritative region, which provides a single source of truth for global configurations such as ACL Policies and global ACL tokens.
@@ -15,7 +15,7 @@ nomad_authoritative_region: ""
 # Specifies the number of server nodes to wait for before bootstrapping.
 # It is most common to use the odd-numbered integers 3 or 5 for this value, depending on the cluster size.
 # A value of 1 does not provide any fault tolerance and is not recommended for production use cases.
-nomad_bootstrap_expect: "{{ nomad_servers | count or 3 }}"
+nomad_bootstrap_expect: "{{ nomad_servers_serf | count or 3 }}"
 
 # Specifies the directory to use - for server-specific data, including the replicated log.
 # By default, this is - the top-level data_dir suffixed with "server", like "/opt/nomad/server".

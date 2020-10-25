@@ -8,9 +8,8 @@ client {
     state_dir = "{{ nomad_client_state_dir }}"
 
 {% if not nomad_consul_enabled %}
-    #servers = [ {{ nomad_servers | map("to_json") | join(', ') }} ]
     server_join {
-        retry_join = [ {{ nomad_servers | map("to_json") | join(', ') }} ]
+        retry_join = [ {{ nomad_servers_rpc | map("to_json") | join(', ') }} ]
         retry_interval = "{{ nomad_retry_interval }}"
         retry_max = {{ nomad_retry_max }}
     }

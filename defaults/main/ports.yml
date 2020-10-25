@@ -1,0 +1,21 @@
+---
+## Ports ##
+# The address the HTTP server is bound to. This is the most common bind address to change.
+nomad_ports_http: 4646
+# The address to bind the internal RPC interfaces to.
+# Should be exposed only to other cluster members if possible.
+nomad_ports_rpc: 4647
+# The address used to bind the gossip layer to.
+# Both a TCP and UDP listener will be exposed on this address.
+# Should be exposed only to other cluster members if possible.
+nomad_ports_serf: 4648
+# The address to advertise for the HTTP interface. 
+# This should be reachable by all the nodes from which end users are going to use the Nomad CLI tools.
+nomad_advertise_ports_http: "{{ nomad_ports_http }}"
+# The address advertised to Nomad client nodes.
+# This allows advertising a different RPC address than is used by Nomad Servers such that the clients can connect to the Nomad servers if they are behind a NAT.
+nomad_advertise_ports_rpc: "{{ nomad_ports_rpc }}"
+# The address advertised for the gossip layer. This address must be reachable from all server nodes.
+# It is not required that clients can reach this address.
+# Nomad servers will communicate to each other over RPC using the advertised Serf IP and advertised RPC Port.
+nomad_advertise_ports_serf: "{{ nomad_ports_serf }}"

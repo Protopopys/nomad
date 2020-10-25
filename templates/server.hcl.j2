@@ -10,14 +10,14 @@ server {
 
 {% if not nomad_consul_enabled %}
     server_join {
-    {% if nomad_retry_join | bool %}
-        retry_join = [ {{ nomad_servers | map("to_json") | join(', ') }} ]
+{% if nomad_retry_join | bool %}
+        retry_join = [ {{ nomad_servers_serf | map("to_json") | join(', ') }} ]
         retry_interval = "{{ nomad_retry_interval }}"
         retry_max = {{ nomad_retry_max }}
-    {% else %}
-        start_join = [ {{ nomad_servers | map("to_json") | join(', ') }} ]
+{% else %}
+        start_join = [ {{ nomad_servers_serf | map("to_json") | join(', ') }} ]
+{% endif %}
     }
-    {% endif %}
 {% endif %}
 
     enabled_schedulers = [ {{ nomad_enabled_schedulers | map("to_json") | join(', ') }} ]

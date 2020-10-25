@@ -132,3 +132,11 @@
     dest: /usr/bin/nomad
     state: link
   when: "nomad_bin_dir != '/usr/bin'"
+
+- name: NOMAD | Print Nomad servers addresses with serf port (for masters)
+  debug:
+    msg: "{{ nomad_servers_serf }}"
+
+- name: NOMAD | Print Nomad servers addresses with rpc port (for clients)
+  debug:
+    msg: "{{ nomad_servers_rpc }}"
