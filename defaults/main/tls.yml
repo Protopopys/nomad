@@ -1,0 +1,30 @@
+---
+## Tls ##
+# Specifies if the TLS should be activated.
+nomad_tls_enabled: false
+# Specifies if TLS should be enabled on the HTTP endpoints on the Nomad agent, including the API.
+nomad_tls_http: false
+# Specifies if TLS should be enabled on the RPC endpoints and Raft traffic between the Nomad servers. 
+# Enabling this on a Nomad client makes the client use TLS for making RPC requests to the Nomad servers.
+nomad_tls_rpc: false
+# This option should be used only when the cluster is being upgraded to TLS, and removed after the migration is complete. 
+# This allows the agent to accept both TLS and plaintext traffic.
+nomad_tls_rpc_upgrade_mode: false
+# Specifies the path to the CA certificate to use for Nomad's TLS communication.
+nomad_tls_ca_file: ""
+# Specifies the path to the certificate file used for Nomad's TLS communication.
+nomad_tls_cert_file: ""
+# Specifies the path to the key file to use for Nomad's TLS communication.
+nomad_tls_key_file: ""
+# Specifies the TLS cipher suites that will be used by the agent as a comma-separated string. 
+# Known insecure ciphers are disabled (3DES and RC4).
+nomad_tls_cipher_suites: "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305, TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+# Specifies the minimum supported version of TLS. Accepted values are "tls10", "tls11", "tls12".
+nomad_tls_min_version: "tls12"
+# Specifies whether TLS connections should prefer the server's ciphersuites over the client's.
+tls_prefer_server_cipher_suites: false
+# Specifies agents should require client certificates for all incoming HTTPS requests. 
+# The client certificates must be signed by the same CA as Nomad.
+nomad_tls_verify_https_client: false
+# Specifies if outgoing TLS connections should verify the server's hostname.
+nomad_tls_verify_server_hostname: false

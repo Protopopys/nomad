@@ -1,0 +1,28 @@
+---
+### Nomad versions ###
+# Устанавливаемая версия Nomad
+nomad_version: v0.12.7
+# Distributives
+nomad:
+  # Список версий с параметрами (контрольная сумма архива,контрольная сумма бинарного файла, пряма ссылка в сети интернет)
+  v0.10.5:
+    # Прямая ссылка в сети интернет для возможноти скачать архив с nomad
+    source_url: https://releases.hashicorp.com/nomad/0.10.5/nomad_0.10.5_linux_amd64.zip
+    # Контрольная сумма скачаемого архива
+    checksum_algorithm: "sha256"
+    checksum: 970eae241a1fec77002baccfa768bab4b7b4a352000b9615d4246498cd830838
+    binary_checksum: dbed4f351a5aa914c2d2a143858e5a5115e23532186e373cb51f932817e30da6
+  v0.12.5:
+    # Прямая ссылка в сети интернет для возможноти скачать архив с nomad
+    source_url: https://releases.hashicorp.com/nomad/0.12.5/nomad_0.12.5_linux_amd64.zip
+    # Контрольная сумма скачаемого архива
+    checksum_algorithm: "sha256"
+    checksum: dece264c86a5898a18d62d6ecca469fee71329e444b284416c57bd1e3d76f253
+    binary_checksum: f51b06f7ff820d1c1e07edb95b931dec6b5d9a1c03aea08a7a2555d2399fd898
+  v0.12.7:
+    # Прямая ссылка в сети интернет для возможноти скачать архив с nomad
+    source_url: https://releases.hashicorp.com/nomad/0.12.7/nomad_0.12.7_linux_amd64.zip
+    # Контрольная сумма скачаемого архива
+    checksum_algorithm: "sha256"
+    checksum: 748e543118b9c802205316129ecfd2e2204bccb1193019add68685c56d0cae9b
+    binary_checksum: ce631a883e37dc22dbf5c3328a41f8949e670b79c9de747db39099dab18620e0

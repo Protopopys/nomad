@@ -1,66 +1,66 @@
+## Name, region, datacenter ##
 name = "{{ nomad_node_name }}"
 region = "{{ nomad_region }}"
 datacenter = "{{ nomad_datacenter }}"
 
+## Ports, Addresses ##
+bind_addr = "{{ nomad_bind_address }}"
+ports {
+    http = {{ nomad_ports_http }}
+    rpc = {{ nomad_ports_rpc }}
+    serf = {{ nomad_ports_serf }}
+}
+{% if nomad_advertise_http_address | ipaddr or nomad_advertise_rpc_address | ipaddr or nomad_advertise_serf_address | ipaddr %}
+advertise {
+{% if nomad_advertise_http_address | ipaddr %}
+    http = "{{ nomad_advertise_http_address }}:{{ nomad_advertise_ports_http }}"
+{% endif %}
+{% if nomad_advertise_rpc_address | ipaddr %}
+    rpc = "{{ nomad_advertise_rpc_address }}:{{ nomad_advertise_ports_rpc }}"
+{% endif %}
+{% if nomad_advertise_serf_address | ipaddr %}
+    serf = "{{ nomad_advertise_serf_address }}:{{ nomad_advertise_ports_serf }}"
+{% endif %}
+}
+{% endif %}
+
+## Directories ##
+data_dir = "{{ nomad_data_dir }}"
+plugin_dir = "{{ nomad_plugin_dir }}"
+
+## Logs, debugs ##
 enable_debug = {{ nomad_debug | bool | lower }}
+enable_syslog = {{ nomad_enable_syslog | bool | lower }}
+log_level = "{{ nomad_log_level }}"
+log_json = {{ nomad_log_json | bool | lower }}
+log_file = "{{ nomad_log_file }}"
+log_rotate_bytes = {{ nomad_log_rotate_bytes }}
+log_rotate_duration = "{{ nomad_log_rotate_duration }}"
+log_rotate_max_files = {{ nomad_log_rotate_max_files }}
+
+## Updates ##
+disable_anonymous_signature = {{ nomad_disable_anonymous_signature | bool | lower }}
 disable_update_check = {{ nomad_disable_update_check | bool | lower }}
 
 
-bind_addr = "{{ nomad_bind_address }}"
-advertise {
-    http = "{{ nomad_advertise_address }}:{{ nomad_ports_http | default('4646') }}"
-    rpc = "{{ nomad_advertise_address }}:{{ nomad_ports_rpc | default('4647') }}"
-    serf = "{{ nomad_advertise_address }}:{{ nomad_ports_serf | default('4648') }}"
-}
-ports {
-    http = {{ nomad_ports_http | default('4646') }}
-    rpc = {{ nomad_ports_rpc | default('4647') }}
-    serf = {{ nomad_ports_serf | default('4648') }}
-}
-
-{% if nomad_use_consul | bool == True %}
-consul {
-    # The address to the Consul agent.
-    address = "{{ nomad_consul_address }}"
-    token = "{{ nomad_consul_token }}"
-    # The service name to register the server and client with Consul.
-    server_service_name = "{{ nomad_consul_servers_service_name }}"
-    client_service_name = "{{ nomad_consul_clients_service_name }}"
-    tags = {{ nomad_consul_tags | to_json }}
-
-    # Enables automatically registering the services.
-    auto_advertise = {{ nomad_consul_auto_advertise | bool | lower }}
-
-    # Enabling the server and client to bootstrap using Consul.
-    server_auto_join = {{ nomad_consul_server_auto_join | bool | lower }}
-    client_auto_join = {{ nomad_consul_client_auto_join | bool | lower }}
-}
+{% if nomad_http_api_response_headers is defined and nomad_http_api_response_headers | length > 0 %}
+## Headers ##
+http_api_response_headers = {{ nomad_http_api_response_headers }}
 {% endif %}
 
-data_dir = "{{ nomad_data_dir }}"
-
-log_level = "{{ nomad_log_level }}"
-enable_syslog = {{ nomad_syslog_enable | bool | lower }}
-
+## Life cycle ##
 leave_on_terminate = {{ nomad_leave_on_terminate | bool | lower }}
 leave_on_interrupt = {{ nomad_leave_on_interrupt | bool | lower }}
 
-
-{% if ( nomad_ca_file ) and
-      ( nomad_cert_file ) and
-      ( nomad_key_file )
-%}
-tls {
-    http = true
-    rpc = true
-    ca_file = "{{ nomad_ca_file }}"
-    cert_file = "{{ nomad_cert_file }}"
-    key_file = "{{ nomad_key_file }}"
-    verify_server_hostname = "{{ nomad_verify_server_hostname | bool | lower }}"
-    verify_https_client = "{{ nomad_verify_https_client | bool | lower }}"
+## Limits ##
+limits {
+    https_handshake_timeout = "{{ nomad_https_handshake_timeout }}"
+    http_max_conns_per_client = {{ nomad_http_max_conns_per_client }}
+    rpc_handshake_timeout = "{{ nomad_rpc_handshake_timeout }}"
+    rpc_max_conns_per_client = {{ nomad_rpc_max_conns_per_client }}
 }
-{% endif %}
 
+## ACLs ##
 acl {
     enabled = {{ nomad_acl_enabled | bool | lower }}
     token_ttl = "{{ nomad_acl_token_ttl }}"
@@ -68,6 +68,52 @@ acl {
     replication_token = "{{ nomad_acl_replication_token }}"
 }
 
+{% if nomad_consul_enabled | bool %}
+## Consul ##
+consul {
+    address = "{{ nomad_consul_address }}"
+    allow_unauthenticated = {{ nomad_consul_allow_unauthenticated | bool | lower }}
+    auth = "{{ nomad_consul_auth }}"
+    auto_advertise = {{ nomad_consul_auto_advertise | bool | lower }}
+    ca_file = "{{ nomad_consul_ca_file }}"
+    cert_file = "{{ nomad_consul_cert_file }}"
+    key_file = "{{ nomad_consul_key_file }}"
+    ssl = {{ nomad_consul_ssl | bool | lower }}
+    verify_ssl = {{ nomad_consul_verify_ssl | bool | lower }}
+    share_ssl = {{ nomad_consul_share_ssl | bool | lower }}
+    client_auto_join = {{ nomad_consul_client_auto_join | bool | lower }}
+    server_auto_join = {{ nomad_consul_server_auto_join | bool | lower }}
+    client_service_name = "{{ nomad_consul_client_service_name }}"
+    server_service_name = "{{ nomad_consul_server_service_name }}"
+    checks_use_advertise = {{ nomad_consul_checks_use_advertise | bool | lower }}
+    client_http_check_name = "{{ nomad_consul_client_http_check_name }}"
+    server_http_check_name = "{{ nomad_consul_server_http_check_name }}"
+    server_serf_check_name = "{{ nomad_consul_server_serf_check_name }}"
+    server_rpc_check_name = "{{ nomad_consul_server_rpc_check_name }}"
+    token = "{{ nomad_consul_token }}"
+    tags = {{ nomad_consul_tags | to_json }}
+}
+{% endif %}
+
+{% if nomad_tls_enabled | bool %}
+## Tls ##
+tls {
+    http = {{ nomad_tls_http | bool | lower }}
+    rpc = {{ nomad_tls_rpc | bool | lower  }}
+    rpc_upgrade_mode = {{ nomad_tls_rpc_upgrade_mode | bool | lower  }}
+    ca_file = "{{ nomad_tls_ca_file }}"
+    cert_file = "{{ nomad_tls_cert_file }}"
+    key_file = "{{ nomad_tls_key_file }}"
+    tls_cipher_suites = "{{ nomad_tls_cipher_suites }}"
+    tls_min_version = "{{ nomad_tls_min_version }}"
+    tls_prefer_server_cipher_suites = {{ nomad_tls_prefer_server_cipher_suites | bool | lower }}
+    verify_https_client = {{ nomad_tls_verify_https_client | bool | lower }}
+    verify_server_hostname = {{ nomad_tls_verify_server_hostname | bool | lower }}
+}
+{% endif %}
+
+{% if nomad_vault_enabled | bool %}
+## Vault ##
 vault {
     enabled = {{ nomad_vault_enabled | bool | lower }}
     address = "{{ nomad_vault_address }}"
@@ -78,7 +124,9 @@ vault {
     ca_path = "{{ nomad_vault_ca_path }}"
     cert_file = "{{ nomad_vault_cert_file }}"
     key_file = "{{ nomad_vault_key_file }}"
+    namespace = "{{ nomad_vault_namespace }}"
     tls_server_name = "{{ nomad_vault_tls_server_name }}"
     tls_skip_verify = {{ nomad_vault_tls_skip_verify | bool | lower }}
     token = "{{ nomad_vault_token }}"
 }
+{% endif %}

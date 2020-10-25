@@ -4,4 +4,4 @@
   tasks:
     - name: "Include ansible-nomad"
       include_role:
-        name: "ansible-nomad"
+        name: "nomad"

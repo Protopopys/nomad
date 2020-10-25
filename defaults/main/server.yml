@@ -1,15 +1,123 @@
 ---
-#### Server settings
+## Server settings ##
+# https://www.nomadproject.io/docs/configuration/server
+# https://www.nomadproject.io/docs/configuration/server_join
+## Server Join ##
 nomad_retry_max: 0
-nomad_retry_join: false
+nomad_retry_join: true
 nomad_retry_interval: "30s"
-nomad_rejoin_after_leave: false
+
+# Specifies the authoritative region, which provides a single source of truth for global configurations such as ACL Policies and global ACL tokens.
+# Non-authoritative regions will replicate from the authoritative to act as a mirror.
+# By default, the local region is assumed to be authoritative.
+nomad_authoritative_region: ""
+
+# Specifies the number of server nodes to wait for before bootstrapping.
+# It is most common to use the odd-numbered integers 3 or 5 for this value, depending on the cluster size.
+# A value of 1 does not provide any fault tolerance and is not recommended for production use cases.
+nomad_bootstrap_expect: "{{ nomad_servers_serf | count or 3 }}"
+
+# Specifies the directory to use - for server-specific data, including the replicated log.
+# By default, this is - the top-level data_dir suffixed with "server", like "/opt/nomad/server".
+# This must be an absolute path.
+nomad_server_data_dir: "{{ nomad_data_dir }}/server" 
+
+# Specifies if this agent should run in server mode.
+# All other server options depend on this value being set.
+nomad_server_enabled: "{{ (nomad_node_role == 'server') or (nomad_node_role == 'both') }}"
+
+# Specifies which sub-schedulers this server will handle.
+# This can be used to restrict the evaluations that worker threads will dequeue for processing.
 nomad_enabled_schedulers:
   - service
   - batch
   - system
-nomad_num_schedulers: "{{ ansible_processor_vcpus }}"
-nomad_node_gc_threshold: "24h"
-nomad_job_gc_threshold: "4h"
-nomad_eval_gc_threshold: "1h"
+
+# Specifies the secret key to use for encryption of Nomad server's gossip network traffic.
+# This key must be 16 bytes that are base64-encoded.
+# The provided key is automatically persisted to the data directory and loaded automatically whenever the agent is restarted.
+# This means that to encrypt Nomad server's gossip protocol, this option only needs to be provided once on each agent's initial startup sequence.
+# If it is provided after Nomad has been initialized with an encryption key, then the provided key is ignored and a warning will be displayed.
+# See the encryption documentation for more details on this option and its impact on the cluster.
 nomad_encrypt: ""
+
+# Specifies how long a node must be in a terminal state before it is garbage collected and purged from the system.
+# This is specified using a label suffix like "30s" or "1h".
+nomad_node_gc_threshold: "24h"
+
+# Specifies the interval between the job garbage collections.
+# Only jobs who have been terminal for at least job_gc_threshold will be collected.
+# Lowering the interval will perform more frequent but smaller collections.
+# Raising the interval will perform collections less frequently but collect more jobs at a time.
+# Reducing this interval is useful if there is a large throughput of tasks, leading to a large set of dead jobs.
+# This is specified using a label suffix like "30s" or "3m". job_gc_interval was introduced in Nomad 0.10.0.
+nomad_job_gc_interval: "5m"
+
+#Specifies the minimum time a job must be in the terminal state before it is eligible for garbage collection.
+# This is specified using a label suffix like "30s" or "1h".
+nomad_job_gc_threshold: "4h"
+
+# Specifies the minimum time an evaluation must be in the terminal state before it is eligible for garbage collection.
+# This is specified using a label suffix like "30s" or "1h".
+nomad_eval_gc_threshold: "1h"
+
+# Specifies the minimum time a deployment must be in the terminal state before it is eligible for garbage collection.
+# This is specified using a label suffix like "30s" or "1h".
+nomad_deployment_gc_threshold: "1h"
+
+# Specifies the minimum age of a CSI volume before it is eligible to have its claims garbage collected.
+# This is specified using a label suffix like "30s" or "1h".
+nomad_csi_volume_claim_gc_threshold: "1h"
+
+# Specifies the minimum age of a CSI plugin before it is eligible for garbage collection if not in use.
+# This is specified using a label suffix like "30s" or "1h".
+nomad_csi_plugin_gc_threshold: "1h"
+
+# Specifies the initial default scheduler config when bootstrapping cluster.
+# The parameter is ignored once the cluster is bootstrapped or value is updated through the API endpoint.
+# See the example section for more details default_scheduler_config was introduced in Nomad 0.10.4.
+default_scheduler_config (scheduler_configuration: nil
+
+# Specifies the additional time given as a grace period beyond the heartbeat TTL of nodes to account for network and processing delays as well as clock skew.
+# This is specified using a label suffix like "30s" or "1h".
+nomad_heartbeat_grace: "10s"
+
+# Specifies the minimum time between node heartbeats. 
+# This is used as a floor to prevent excessive updates.
+# This is specified using a label suffix like "30s" or "1h".
+# Lowering the minimum TTL is a tradeoff as it lowers failure detection time of nodes at the tradeoff of false positives and increased load on the leader.
+nomad_min_heartbeat_ttl: "10s"
+
+# Specifies the maximum target rate of heartbeats being processed per second.
+# This allows the TTL to be increased to meet the target rate.
+# Increasing the maximum heartbeats per second is a tradeoff as it lowers failure detection time of nodes at the tradeoff of false positives and increased load on the leader.
+nomad_max_heartbeats_per_second: 50.0
+
+# Specifies the number of parallel scheduler threads to run.
+# This can be as many as one per core, or 0 to disallow this server from making any scheduling decisions.
+# This defaults to the number of CPU cores.
+nomad_num_schedulers: "{{ ansible_processor_vcpus }}"
+
+# Specifies the Nomad protocol version to use when communicating with other Nomad servers. 
+# This value is typically not required as the agent internally knows the latest version, but may be useful in some upgrade scenarios.
+nomad_protocol_version: 1
+
+# Specifies the Raft protocol version to use when communicating with other Nomad servers.
+# This affects available Autopilot features and is typically not required as the agent internally knows the latest version, but may be useful in some upgrade scenarios.
+nomad_raft_protocol: 3
+
+# An integer multiplier used by Nomad servers to scale key Raft timing parameters.
+# Omitting this value or setting it to 0 uses default timing described below.
+# Lower values are used to tighten timing and increase sensitivity while higher values relax timings and reduce sensitivity.
+# Tuning this affects the time it takes Nomad to detect leader failures and to perform leader elections, at the expense of requiring more network and CPU resources for better performance.
+# The maximum allowed value is 10.
+nomad_raft_multiplier: 1
+
+# Specifies if Nomad will ignore a previous leave and attempt to rejoin the cluster when starting.
+# By default, Nomad treats leave as a permanent intent and does not attempt to join the cluster again when starting.
+# This flag allows the previous state to be used to rejoin the cluster.
+nomad_rejoin_after_leave: false
+
+# A custom version of the format X.Y.Z to use in place of the Nomad version when custom upgrades are enabled in Autopilot.
+# For more information, see the Autopilot Guide.
+nomad_upgrade_version: ""

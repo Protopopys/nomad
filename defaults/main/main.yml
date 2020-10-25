@@ -6,26 +6,12 @@ downloader_source_folder: ~/DISTR
 # Папка в которую будет осуществлена загрузка установочного архива
 distribution_path: "/opt/DISTR"
 
-### Package
-# Устанавливаемая версия Nomad
-nomad_version: v0.10.5
-# Пакеты
-nomad:
-  # Список версий с параметрами (контрольная сумма архива,контрольная сумма бинарного файла, пряма ссылка в сети интернет)
-  v0.10.5:
-    # Прямая ссылка в сети интернет для возможноти скачать архив с nomad
-    source_url: https://releases.hashicorp.com/nomad/0.10.5/nomad_0.10.5_linux_amd64.zip
-    # Контрольная сумма скачаемого архива
-    checksum_algorithm: "sha256"
-    checksum: 970eae241a1fec77002baccfa768bab4b7b4a352000b9615d4246498cd830838
-    binary_checksum: dbed4f351a5aa914c2d2a143858e5a5115e23532186e373cb51f932817e30da6
-
 ### System user and group
 # Параметры создания пользователя
-nomad_manage_user: true
-nomad_manage_group: true
-nomad_user: user
-nomad_group: user
+nomad_manage_user: false
+nomad_manage_group: false
+nomad_user: root
+nomad_group: root
 nomad_system: true
 nomad_shell: /bin/false
 nomad_ssh_key: false
@@ -35,90 +21,88 @@ nomad_ssh_key: false
 nomad_state: started
 nomad_enabled: true
 
-### Paths
-# Папка на удаленном сервере куда будет осуществляться доставка конфигурационного файла
-nomad_conf_dir: "/etc/nomad.d"
-# Папка для данных
-nomad_data_dir: "/DATA/nomad"
-# Папка на удаленном сервере куда будет осуществляться доставка архива с дальнейшей распаковкой
-nomad_bin_dir: "/opt/nomad/{{ nomad_version }}"
-
-
-## Core
-nomad_debug: false
-
-### Nomad settings
-nomad_datacenter: "dc1"
-nomad_region: "global"
-nomad_log_level: "INFO"
-nomad_syslog_enable: true
-nomad_node_name: "{{ inventory_hostname_short }}"
-#nomad_node_role: both
+## Nomad client role
+nomad_node_role: both
 #nomad_node_role: server
-nomad_node_role: client
-nomad_leave_on_terminate: true
-nomad_leave_on_interrupt: false
-nomad_disable_update_check: false
-
-### Addresses
-nomad_bind_address: "{{ advertise_ip | default(ansible_host) }}"
-nomad_advertise_address: "{{ advertise_ip | default(ansible_host) }}"
+#nomad_node_role: client
 
 ### Servers
-nomad_group_name: "nomad_instances"
-nomad_servers: "\
-  {% if not nomad_use_consul %}\
-    {% set _nomad_servers = [] %}\
-    {% for host in groups[nomad_group_name] %}\
-      {% set _nomad_node_role = hostvars[host]['nomad_node_role'] | default('client', true) %}\
-      {% if ( _nomad_node_role == 'server' or _nomad_node_role == 'both') %}\
-        {% if _nomad_servers.append(host) %}{% endif %}\
-      {% endif %}\
-    {% endfor %}\
-    {{ _nomad_servers }}\
-    {% else %}\
-    []\
-  {% endif %}"
+nomad_group_name: "nomad"
 
-### Ports
-nomad_ports_http: 4646
-nomad_ports_rpc: 4647
-nomad_ports_serf: 4648
+# Specifies a list of server addresses to join on startup.
+# If Nomad is unable to join with any of the specified addresses, agent startup will fail.
+# If the port is omitted, the default port of 4648 is used.
+nomad_servers_serf: "\
+  {% set _nomad_master_nodes = []  %}\
+  {% for host in groups[nomad_group_name] %}\
+    {% set _nomad_node_role = hostvars[host]['nomad_node_role'] | default('client') %}\
+    {% if ( _nomad_node_role == 'server' or _nomad_node_role == 'both') %}\
+      {{ _nomad_master_nodes.append( (hostvars[host].advertise_ip|default(hostvars[host].ansible_default_ipv4.address)|string) + ':' + (hostvars[host].nomad_advertise_ports_serf|default(hostvars[host].nomad_ports_serf)|default('4648')|string) ) }}\
+    {% endif %}\
+  {% endfor %}\
+  {{ _nomad_master_nodes }}"
 
-### Consul
-nomad_use_consul: false
-nomad_consul_address: "localhost:8500"
-nomad_consul_token: ""
-nomad_consul_servers_service_name: "nomad-servers"
-nomad_consul_clients_service_name: "nomad-clients"
-nomad_consul_tags: {}
-nomad_consul_auto_advertise: true
-nomad_consul_server_auto_join: true
-nomad_consul_client_auto_join: true
+# Specifies an array of addresses to the Nomad servers this client should join. 
+# This list is used to register the client with the server nodes and advertise the available resources so that the agent can receive work.
+# This may be specified as an IP address or DNS, with or without the port.
+# If the port is omitted, the default port of 4647 is used.
+nomad_servers_rpc: "\
+  {% set _nomad_master_nodes = []  %}\
+  {% for host in groups[nomad_group_name] %}\
+    {% set _nomad_node_role = hostvars[host]['nomad_node_role'] | default('client') %}\
+    {% if ( _nomad_node_role == 'server' or _nomad_node_role == 'both') %}\
+      {{ _nomad_master_nodes.append( (hostvars[host].advertise_ip|default(hostvars[host].ansible_default_ipv4.address)|string) + ':' + (hostvars[host].nomad_advertise_ports_rpc|default(hostvars[host].nomad_ports_rpc)|default('4647')|string) ) }}\
+    {% endif %}\
+  {% endfor %}\
+  {{ _nomad_master_nodes }}"
 
-### ACLs
-nomad_acl_enabled: false
-nomad_acl_token_ttl: "30s"
-nomad_acl_policy_ttl: "30s"
-nomad_acl_replication_token: ""
+### General Parameters
 
-### Vault
-nomad_vault_enabled: "{{ lookup('env', 'NOMAD_VAULT_ENABLED') | default('no', true) }}"
-nomad_vault_address: "0.0.0.0"
-nomad_vault_allow_unauthenticated: true
-nomad_vault_create_from_role: ""
-nomad_vault_task_token_ttl: ""
-nomad_vault_ca_file: ""
-nomad_vault_ca_path: ""
-nomad_vault_cert_file: ""
-nomad_vault_key_file: ""
-nomad_vault_tls_server_name: ""
-nomad_vault_tls_skip_verify: false
-nomad_vault_token: ""
+## Directories ##
+# Specifies a local directory used to store agent config files.
+# This must be specified as an absolute path.
+nomad_conf_dir: "/etc/nomad.d"
+# Specifies a local directory used to store agent state. 
+# Client nodes use this directory by default to store temporary allocation data as well as cluster information. 
+# Server nodes use this directory to store cluster state, including the replicated log and snapshot data. 
+# This must be specified as an absolute path.
+nomad_data_dir: "/DATA/nomad"
+# Specifies the directory to use for looking up plugins. 
+# By default, this is the top-level data_dir suffixed with "plugins", like "/opt/nomad/plugins". 
+# This must be an absolute path.
+nomad_plugin_dir: "{{ nomad_data_dir }}/plugins"
+# Specifies a local directory used to store agent binary file.
+# This must be specified as an absolute path.
+nomad_bin_dir: "/opt/nomad/{{ nomad_version }}"
 
-### Tls
-nomad_ca_file: ""
-nomad_cert_file: ""
-nomad_key_file: ""
-nomad_verify_server_hostname: true
-nomad_verify_https_client: true
+## Name, region, datacenter ##
+# Specifies the name of the local node. 
+# This value is used to identify individual agents. 
+# When specified on a server, the name must be unique within the region.
+nomad_node_name: "{{ inventory_hostname_short }}"
+# Specifies the region the Nomad agent is a member of. 
+# A region typically maps to a geographic region, for example us, with potentially multiple zones, which map to datacenters such as us-west and us-east.
+nomad_region: "global"
+# Specifies the data center of the local agent. 
+# All members of a datacenter should share a local LAN connection.
+nomad_datacenter: "dc1"
+
+## Updates ##
+# Specifies if Nomad should provide an anonymous signature for de-duplication with the update check.
+nomad_disable_anonymous_signature: false
+# Specifies if Nomad should not check for updates and security bulletins.
+nomad_disable_update_check: false
+
+## Headers ##
+# Specifies user-defined headers to add to the HTTP API responses.
+nomad_http_api_response_headers: ''
+
+## Life cycle ##
+# Specifies if the agent should gracefully leave when receiving the terminate signal. 
+# By default, the agent will exit forcefully on any signal.
+# This value should only be set to true on server agents if it is expected that a terminated server instance will never join the cluster again.
+nomad_leave_on_terminate: false
+# Specifies if the agent should gracefully leave when receiving the interrupt signal. 
+# By default, the agent will exit forcefully on any signal.
+# This value should only be set to true on server agents if it is expected that a terminated server instance will never join the cluster again.
+nomad_leave_on_interrupt: false

@@ -23,7 +23,7 @@
 * `bootstrap` - os_packages,os_group,os_user,os_params,facts - together (play all task)
 
 
-* `install` - play all task (download and install bynary) 
+* `install` - play all task (download and install bynary)
 
 
 * `config_file` - Creating Nomad configuration files
@@ -35,4 +35,4 @@
 * `configs` - Creating ALL configuration files
 
 
-* `configure` - play all task
+* `configure` - play all task (configuration and systemd files) 

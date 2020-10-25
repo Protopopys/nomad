@@ -1,0 +1,15 @@
+---
+- name: Nomad+Consul
+  hosts: all
+  tasks:
+    - name: "Include consul role"
+      include_role:
+        name: "consul"
+      vars:
+        consul_client_addr: "0.0.0.0"
+
+    - name: "Include nomad role"
+      include_role:
+        name: "nomad"
+      vars:
+        nomad_consul_enabled: true
