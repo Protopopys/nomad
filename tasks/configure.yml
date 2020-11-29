@@ -12,6 +12,18 @@
     - config_file
     - configs
 
+# Создаем папки на удаленной машине
+- name: NOMAD | Creating logs directory
+  file:
+    path: "{{ nomad_logs_dir }}"
+    state: directory
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+    mode: "0755"
+  tags:
+    - directory
+    - logs_directory
+
 - name: NOMAD | Creating data/plugin directory
   file:
     path: "{{ item }}"

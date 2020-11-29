@@ -1,7 +1,7 @@
 ---
 ### Nomad versions ###
 # Устанавливаемая версия Nomad
-nomad_version: v0.12.7
+nomad_version: v1.0.0-beta3
 # Distributives
 nomad:
   # Список версий с параметрами (контрольная сумма архива,контрольная сумма бинарного файла, пряма ссылка в сети интернет)
@@ -26,3 +26,10 @@ nomad:
     checksum_algorithm: "sha256"
     checksum: 748e543118b9c802205316129ecfd2e2204bccb1193019add68685c56d0cae9b
     binary_checksum: ce631a883e37dc22dbf5c3328a41f8949e670b79c9de747db39099dab18620e0
+  v1.0.0-beta3:
+    # Прямая ссылка в сети интернет для возможноти скачать архив с nomad
+    source_url: https://releases.hashicorp.com/nomad/1.0.0-beta3/nomad_1.0.0-beta3_linux_amd64.zip
+    # Контрольная сумма скачаемого архива
+    checksum_algorithm: "sha256"
+    checksum: 9d8efe78c017f17d21fe7ebb230f42eadec16da7e076220b8c2d53e20536efbf
+    binary_checksum: 1c13eba5e20ad63e23a8e48a8dec003f21fcef439da53920d24db76eaa1dfbed

@@ -62,6 +62,9 @@ nomad_servers_rpc: "\
 # Specifies a local directory used to store agent config files.
 # This must be specified as an absolute path.
 nomad_conf_dir: "/etc/nomad.d"
+# Specifies a local directory used to store agent log files.
+# This must be specified as an absolute path.
+nomad_logs_dir: "/var/log/nomad"
 # Specifies a local directory used to store agent state. 
 # Client nodes use this directory by default to store temporary allocation data as well as cluster information. 
 # Server nodes use this directory to store cluster state, including the replicated log and snapshot data. 
