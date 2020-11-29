@@ -1,6 +1,6 @@
-![Molecule Test](https://github.com/Protopopys/ansible-nomad/workflows/Molecule%20Test/badge.svg)
+![Nomad Molecule Test](https://github.com/Protopopys/nomad/workflows/Molecule%20Test/badge.svg?branch=master)
 
-# Ansible Role:ansible-nomad
+# Ansible Role:nomad
 
 
 ## Tags:
